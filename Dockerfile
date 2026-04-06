@@ -31,6 +31,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libuuid1 \
         libjs-extjs \
         smartmontools \
+        nfs-common \
     && rm -rf /var/lib/apt/lists/*
 
 # Download and install pre-built ARM64 PBS packages from wofferl releases
@@ -68,8 +69,14 @@ COPY config/runit/ /runit/
 COPY scripts/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
+COPY scripts/nas-health.sh /nas-health.sh
+RUN chmod +x /nas-health.sh
+
 # Persistent data volumes
 VOLUME ["/etc/proxmox-backup", "/var/log/proxmox-backup", "/var/lib/proxmox-backup"]
+
+# NFS backup storage mount point
+RUN mkdir -p /backups
 
 # PBS web interface
 EXPOSE 8007
