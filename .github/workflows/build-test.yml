@@ -73,7 +73,7 @@ jobs:
           docker save pbs-test:arm64 | gzip > pbs-arm64.tar.gz
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: pbs-image-arm64
           path: pbs-arm64.tar.gz
