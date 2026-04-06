@@ -1,0 +1,102 @@
+name: Check for PBS Updates
+
+on:
+  schedule:
+    # Run every Monday at 06:00 UTC
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  check:
+    name: Check for new PBS version
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check for updates
+        id: check
+        run: |
+          chmod +x scripts/check-version.sh
+          OUTPUT=$(./scripts/check-version.sh)
+          echo "$OUTPUT"
+
+          if echo "$OUTPUT" | grep -q "UPDATE_AVAILABLE=true"; then
+            echo "update_available=true" >> "$GITHUB_OUTPUT"
+            NEW_VERSION=$(echo "$OUTPUT" | grep "NEW_VERSION=" | cut -d= -f2)
+            echo "new_version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
+          else
+            echo "update_available=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Update Dockerfile package versions
+        if: steps.check.outputs.update_available == 'true'
+        id: update
+        run: |
+          NEW_VERSION="${{ steps.check.outputs.new_version }}"
+
+          # Fetch the release asset list to get exact package filenames
+          ASSETS=$(curl -fsSL "https://api.github.com/repos/wofferl/proxmox-backup-arm64/releases/tags/${NEW_VERSION}" | \
+            python3 -c "import sys,json; [print(a['name']) for a in json.load(sys.stdin)['assets']]")
+
+          echo "Available packages:"
+          echo "$ASSETS"
+
+          # Update VERSION file
+          echo "$NEW_VERSION" > VERSION
+
+          # Update PBS_VERSION in Dockerfile
+          sed -i "s/^ARG PBS_VERSION=.*/ARG PBS_VERSION=${NEW_VERSION}/" Dockerfile
+
+          # Update supporting package versions from the asset list
+          # Extract version numbers for each supporting package
+          for pkg in proxmox-mini-journalreader proxmox-termproxy proxmox-widget-toolkit pve-xtermjs pbs-i18n libjs-qrcodejs libproxmox-acme-plugins; do
+            FILENAME=$(echo "$ASSETS" | grep "^${pkg}_" | head -1)
+            if [ -n "$FILENAME" ]; then
+              # Find the old filename in Dockerfile and replace
+              OLD_PATTERN="${pkg}_[^\"]*\.deb"
+              sed -i "s|${OLD_PATTERN}|${FILENAME}|g" Dockerfile
+            fi
+          done
+
+      - name: Create update PR
+        if: steps.check.outputs.update_available == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          NEW_VERSION="${{ steps.check.outputs.new_version }}"
+          BRANCH="update/pbs-${NEW_VERSION}"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git checkout -b "$BRANCH"
+          git add VERSION Dockerfile
+          git commit -m "Update PBS to version ${NEW_VERSION}"
+          git push origin "$BRANCH"
+
+          gh pr create \
+            --title "Update PBS to ${NEW_VERSION}" \
+            --body "$(cat <<EOF
+          ## Automated PBS Version Update
+
+          New ARM64 packages detected from [wofferl/proxmox-backup-arm64](https://github.com/wofferl/proxmox-backup-arm64/releases/tag/${NEW_VERSION}).
+
+          - **New version**: ${NEW_VERSION}
+
+          ### Changes
+          - Updated \`VERSION\` file
+          - Updated package versions in \`Dockerfile\`
+
+          ### Action needed
+          1. Review the Dockerfile changes (especially supporting package versions)
+          2. Merge to trigger a new build + publish
+          EOF
+          )" \
+            --base main \
+            --head "$BRANCH" \
+            --label "automated,update"

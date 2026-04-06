@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:git.proxmox.com)",
+      "WebFetch(domain:api.github.com)",
+      "WebFetch(domain:pbs.proxmox.com)",
+      "Bash(gh api:*)",
+      "Bash(git ls-remote:*)",
+      "Bash(sort:*)",
+      "Bash(gh release view:*)",
+      "Bash(ssh:*)",
+      "Bash(ls:*)",
+      "Bash(ssh-add:*)",
+      "Bash(scp -r:*)",
+      "Bash(scp:*)"
+    ]
+  }
+}

@@ -1,0 +1,27 @@
+services:
+  pbs:
+    image: ghcr.io/spencerarrasmith/proxmox-backup-server:latest
+    container_name: proxmox-backup-server
+    ports:
+      - "8007:8007"
+    volumes:
+      - pbs_etc:/etc/proxmox-backup
+      - pbs_logs:/var/log/proxmox-backup
+      - pbs_lib:/var/lib/proxmox-backup
+      # Mount your backup storage here:
+      # - /path/to/backups:/backups
+    tmpfs:
+      - /run
+    restart: unless-stopped
+    stop_signal: SIGHUP
+    mem_limit: 2g
+    # Required for smartctl support (optional):
+    # cap_add:
+    #   - SYS_RAWIO
+    # devices:
+    #   - /dev/sda:/dev/sda
+
+volumes:
+  pbs_etc:
+  pbs_logs:
+  pbs_lib:
