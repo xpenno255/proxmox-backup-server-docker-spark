@@ -1,6 +1,35 @@
 #!/bin/bash
 set -e
 
+# --- NAS / NFS Mount ---
+# If NAS_ADDRESS is set, wait for the NAS and mount via NFS before starting services.
+NAS_ADDRESS="${NAS_ADDRESS:-}"
+NAS_SHARE="${NAS_SHARE:-}"
+NAS_MOUNT_POINT="${NAS_MOUNT_POINT:-/backups}"
+NAS_MOUNT_OPTS="${NAS_MOUNT_OPTS:-rw,nolock,vers=3,soft,timeo=50}"
+NAS_RETRY_INTERVAL="${NAS_RETRY_INTERVAL:-60}"
+
+if [ -n "$NAS_ADDRESS" ] && [ -n "$NAS_SHARE" ]; then
+    echo "==> NAS mount configured: ${NAS_ADDRESS}:${NAS_SHARE} -> ${NAS_MOUNT_POINT}"
+
+    # Wait for NAS to become reachable
+    until ping -c 1 -W 3 "$NAS_ADDRESS" >/dev/null 2>&1; do
+        echo "==> Waiting for NAS at ${NAS_ADDRESS} (retrying in ${NAS_RETRY_INTERVAL}s)..."
+        sleep "$NAS_RETRY_INTERVAL"
+    done
+    echo "==> NAS at ${NAS_ADDRESS} is reachable"
+
+    # Mount NFS share if not already mounted
+    if ! mountpoint -q "$NAS_MOUNT_POINT" 2>/dev/null; then
+        echo "==> Mounting ${NAS_ADDRESS}:${NAS_SHARE} to ${NAS_MOUNT_POINT}..."
+        mkdir -p "$NAS_MOUNT_POINT"
+        mount -t nfs -o "$NAS_MOUNT_OPTS" "${NAS_ADDRESS}:${NAS_SHARE}" "$NAS_MOUNT_POINT"
+        echo "==> NFS mount successful"
+    else
+        echo "==> ${NAS_MOUNT_POINT} is already mounted"
+    fi
+fi
+
 PBS_ETC="/etc/proxmox-backup"
 PBS_DEFAULT="/etc/proxmox-backup-default"
 PBS_LIB="/var/lib/proxmox-backup"
