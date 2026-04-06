@@ -8,18 +8,18 @@ Uses pre-built ARM64 packages from [wofferl/proxmox-backup-arm64](https://github
 
 ```bash
 # Using docker-compose (recommended)
-wget https://raw.githubusercontent.com/spencerarrasmith/proxmox-backup-server-docker/main/docker-compose.yml
+wget https://raw.githubusercontent.com/xpenno255/proxmox-backup-server-docker-spark/main/docker-compose.yml
 docker compose up -d
 
 # Or pull directly
-docker pull ghcr.io/spencerarrasmith/proxmox-backup-server:latest
+docker pull ghcr.io/xpenno255/proxmox-backup-server-docker-spark:latest
 docker run -d --name pbs \
   --tmpfs /run \
   -p 8007:8007 \
   -v pbs_etc:/etc/proxmox-backup \
   -v pbs_logs:/var/log/proxmox-backup \
   -v pbs_lib:/var/lib/proxmox-backup \
-  ghcr.io/spencerarrasmith/proxmox-backup-server:latest
+  ghcr.io/xpenno255/proxmox-backup-server-docker-spark:latest
 ```
 
 Access the web UI at **https://\<host-ip\>:8007**
@@ -42,7 +42,7 @@ Default credentials: `admin@pbs` / `pbspbs` (change immediately after first logi
 ```yaml
 services:
   pbs:
-    image: ghcr.io/spencerarrasmith/proxmox-backup-server:latest
+    image: ghcr.io/xpenno255/proxmox-backup-server-docker-spark:latest
     ports:
       - "8007:8007"
     volumes:

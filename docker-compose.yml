@@ -1,6 +1,6 @@
 services:
   pbs:
-    image: ghcr.io/spencerarrasmith/proxmox-backup-server:latest
+    image: ghcr.io/xpenno255/proxmox-backup-server-docker-spark:latest
     container_name: proxmox-backup-server
     ports:
       - "8007:8007"
