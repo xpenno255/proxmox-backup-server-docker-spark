@@ -16,7 +16,7 @@ cd proxmox-backup-server-docker
 
 Option B - Copy from Windows (from the Windows machine):
 ```bash
-scp -r "/c/Users/spenc/OneDrive - University of Birmingham/VibeCode/proxmox-backup-server-docker" xpenno255@192.168.1.110:~/pbs-docker
+scp -r "<local-project-path>" <your-username>@<SPARK_IP>:~/pbs-docker
 ```
 
 ## Step 2: Build the Docker image
@@ -47,7 +47,7 @@ docker logs pbs-test
 curl -sk https://localhost:8007
 ```
 
-Access the web UI at: https://192.168.1.110:8007
+Access the web UI at: https://<SPARK_IP>:8007
 Default credentials: admin@pbs / pbspbs
 
 ## Step 4: Debug if needed

@@ -5,8 +5,8 @@ services:
     ports:
       - "8007:8007"
     environment:
-      - NAS_ADDRESS=192.168.1.53
-      - NAS_SHARE=/volume1/Proxmox
+      - NAS_ADDRESS=           # Your NAS IP address
+      - NAS_SHARE=             # NFS export path (e.g. /volume1/Backups)
       - NAS_MOUNT_POINT=/backups
       - NAS_MOUNT_OPTS=rw,nolock,vers=3,soft,timeo=50
       - NAS_RETRY_INTERVAL=60
