@@ -21,8 +21,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \
         curl \
         openssl \
-        libfuse3t64 \
-        libsgutils2-1.48 \
         libsystemd0 \
         libacl1 \
         libpam0g \
