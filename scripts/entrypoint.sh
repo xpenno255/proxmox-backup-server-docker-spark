@@ -12,8 +12,8 @@ NAS_RETRY_INTERVAL="${NAS_RETRY_INTERVAL:-60}"
 if [ -n "$NAS_ADDRESS" ] && [ -n "$NAS_SHARE" ]; then
     echo "==> NAS mount configured: ${NAS_ADDRESS}:${NAS_SHARE} -> ${NAS_MOUNT_POINT}"
 
-    # Wait for NAS to become reachable
-    until ping -c 1 -W 3 "$NAS_ADDRESS" >/dev/null 2>&1; do
+    # Wait for NAS to become reachable (check NFS port 2049 — ping not available in container)
+    until bash -c "echo >/dev/tcp/${NAS_ADDRESS}/2049" 2>/dev/null; do
         echo "==> Waiting for NAS at ${NAS_ADDRESS} (retrying in ${NAS_RETRY_INTERVAL}s)..."
         sleep "$NAS_RETRY_INTERVAL"
     done
