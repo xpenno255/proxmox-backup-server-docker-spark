@@ -21,7 +21,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \
         curl \
         openssl \
-        libfuse3-3 \
+        libfuse3t64 \
         libsgutils2-1.48 \
         libsystemd0 \
         libacl1 \
@@ -29,7 +29,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         zlib1g \
         libzstd1 \
         libuuid1 \
-        libjs-extjs \
         smartmontools \
         nfs-common \
     && rm -rf /var/lib/apt/lists/*
