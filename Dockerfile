@@ -7,7 +7,7 @@
 # Build: docker build -t pbs .
 
 ARG DEBIAN_VERSION=trixie
-ARG PBS_VERSION=4.1.2-1
+ARG PBS_VERSION=4.1.6-1
 
 FROM debian:${DEBIAN_VERSION}
 
@@ -45,7 +45,7 @@ RUN mkdir -p /tmp/pbs-packages && cd /tmp/pbs-packages && \
     # Supporting packages
     curl -fSL -O "${RELEASE_URL}/proxmox-mini-journalreader_1.6-1_arm64.deb" && \
     curl -fSL -O "${RELEASE_URL}/proxmox-termproxy_2.0.3_arm64.deb" && \
-    curl -fSL -O "${RELEASE_URL}/proxmox-widget-toolkit_5.1.5_all.deb" && \
+    curl -fSL -O "${RELEASE_URL}/proxmox-widget-toolkit_5.1.8_all.deb" && \
     curl -fSL -O "${RELEASE_URL}/pve-xtermjs_5.5.0-3_all.deb" && \
     curl -fSL -O "${RELEASE_URL}/pbs-i18n_3.6.6_all.deb" && \
     curl -fSL -O "${RELEASE_URL}/libjs-qrcodejs_1.20230525-pve1_all.deb" && \
