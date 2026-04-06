@@ -4,22 +4,29 @@ services:
     container_name: proxmox-backup-server
     ports:
       - "8007:8007"
+    environment:
+      - NAS_ADDRESS=192.168.1.53
+      - NAS_SHARE=/volume1/Proxmox
+      - NAS_MOUNT_POINT=/backups
+      - NAS_MOUNT_OPTS=rw,nolock,vers=3,soft,timeo=50
+      - NAS_RETRY_INTERVAL=60
     volumes:
       - pbs_etc:/etc/proxmox-backup
       - pbs_logs:/var/log/proxmox-backup
       - pbs_lib:/var/lib/proxmox-backup
-      # Mount your backup storage here:
-      # - /path/to/backups:/backups
     tmpfs:
       - /run
+    cap_add:
+      - SYS_ADMIN
     restart: unless-stopped
     stop_signal: SIGHUP
     mem_limit: 2g
-    # Required for smartctl support (optional):
-    # cap_add:
-    #   - SYS_RAWIO
-    # devices:
-    #   - /dev/sda:/dev/sda
+    healthcheck:
+      test: ["/nas-health.sh"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
 
 volumes:
   pbs_etc:
