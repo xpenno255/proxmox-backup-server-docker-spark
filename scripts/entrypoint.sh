@@ -6,7 +6,7 @@ set -e
 NAS_ADDRESS="${NAS_ADDRESS:-}"
 NAS_SHARE="${NAS_SHARE:-}"
 NAS_MOUNT_POINT="${NAS_MOUNT_POINT:-/backups}"
-NAS_MOUNT_OPTS="${NAS_MOUNT_OPTS:-rw,nolock,vers=3,soft,timeo=50}"
+NAS_MOUNT_OPTS="${NAS_MOUNT_OPTS:-rw,nolock,vers=4,soft,timeo=50}"
 NAS_RETRY_INTERVAL="${NAS_RETRY_INTERVAL:-60}"
 
 if [ -n "$NAS_ADDRESS" ] && [ -n "$NAS_SHARE" ]; then
@@ -19,12 +19,32 @@ if [ -n "$NAS_ADDRESS" ] && [ -n "$NAS_SHARE" ]; then
     done
     echo "==> NAS at ${NAS_ADDRESS} is reachable"
 
+    # Check if mount point is already mounted (use mountpoint if available, fallback to mount|grep)
+    already_mounted=false
+    if command -v mountpoint >/dev/null 2>&1; then
+        if mountpoint -q "$NAS_MOUNT_POINT" 2>/dev/null; then
+            already_mounted=true
+        fi
+    else
+        if mount | grep -q " on ${NAS_MOUNT_POINT} "; then
+            already_mounted=true
+        fi
+    fi
+
     # Mount NFS share if not already mounted
-    if ! mountpoint -q "$NAS_MOUNT_POINT" 2>/dev/null; then
+    if [ "$already_mounted" != "true" ]; then
         echo "==> Mounting ${NAS_ADDRESS}:${NAS_SHARE} to ${NAS_MOUNT_POINT}..."
+        echo "==> Mount options: ${NAS_MOUNT_OPTS}"
         mkdir -p "$NAS_MOUNT_POINT"
-        mount -t nfs -o "$NAS_MOUNT_OPTS" "${NAS_ADDRESS}:${NAS_SHARE}" "$NAS_MOUNT_POINT"
-        echo "==> NFS mount successful"
+        if mount -v -t nfs -o "$NAS_MOUNT_OPTS" "${NAS_ADDRESS}:${NAS_SHARE}" "$NAS_MOUNT_POINT" 2>&1; then
+            echo "==> NFS mount successful"
+        else
+            echo "==> ERROR: NFS mount failed with exit code $?"
+            echo "==> Checking if nfs kernel module is available..."
+            cat /proc/filesystems | grep nfs || echo "==> WARNING: nfs not in /proc/filesystems"
+            echo "==> Attempting to load nfs module..."
+            modprobe nfs 2>/dev/null || true
+        fi
     else
         echo "==> ${NAS_MOUNT_POINT} is already mounted"
     fi

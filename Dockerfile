@@ -29,6 +29,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libuuid1 \
         smartmontools \
         nfs-common \
+        util-linux \
     && rm -rf /var/lib/apt/lists/*
 
 # Download and install pre-built ARM64 PBS packages from wofferl releases

@@ -11,8 +11,20 @@ if [ -z "${NAS_ADDRESS}" ]; then
     exit 0
 fi
 
-# Check if mount point is an active mount
-if ! mountpoint -q "$MOUNT_POINT" 2>/dev/null; then
+# Check if mount point is an active mount (use mountpoint if available, fall back to mount|grep)
+mount_check_ok=false
+if command -v mountpoint >/dev/null 2>&1; then
+    if mountpoint -q "$MOUNT_POINT" 2>/dev/null; then
+        mount_check_ok=true
+    fi
+else
+    # Fallback: check if mount point appears in mount output
+    if mount | grep -q " on ${MOUNT_POINT} "; then
+        mount_check_ok=true
+    fi
+fi
+
+if [ "$mount_check_ok" != "true" ]; then
     echo "UNHEALTHY: $MOUNT_POINT is not mounted"
     exit 1
 fi

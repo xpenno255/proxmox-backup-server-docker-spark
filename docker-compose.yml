@@ -18,6 +18,10 @@ services:
       - /run
     cap_add:
       - SYS_ADMIN
+      - DAC_READ_SEARCH
+    security_opt:
+      - apparmor:unconfined
+      - seccomp:unconfined
     restart: unless-stopped
     stop_signal: SIGHUP
     mem_limit: 2g
