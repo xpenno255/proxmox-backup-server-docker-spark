@@ -1,6 +1,15 @@
 #!/bin/bash
 set -e
 
+# Debug: Show available PBS binaries
+echo "=== DEBUG: Available PBS binaries ==="
+which proxmox-backup-proxy 2>/dev/null || echo "proxmox-backup-proxy not in PATH"
+which proxmox-backup-api 2>/dev/null || echo "proxmox-backup-api not in PATH"
+ls -la /usr/bin/proxmox* 2>/dev/null || echo "No /usr/bin/proxmox*"
+ls -la /usr/sbin/proxmox* 2>/dev/null || echo "No /usr/sbin/proxmox*"
+find /usr -name "proxmox*" -type f 2>/dev/null | while read f; do echo "Found: $f"; done
+echo "====================================="
+
 # --- NAS / NFS Mount ---
 # If NAS_ADDRESS is set, wait for the NAS and mount via NFS before starting services.
 NAS_ADDRESS="${NAS_ADDRESS:-}"

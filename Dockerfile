@@ -54,9 +54,13 @@ RUN mkdir -p /tmp/pbs-packages && cd /tmp/pbs-packages && \
     # Install all packages (dpkg first pass may fail on deps, apt fixes it)
     dpkg -i *.deb || true && \
     apt-get update && apt-get install -f -y --no-install-recommends && \
-    # Debug: find PBS binaries
-    echo "=== PBS binaries installed ===" && \
-    find /usr -name "proxmox-backup*" -type f 2>/dev/null | head -20 && \
+    # Debug: find PBS binaries and services
+    echo "=== PBS package contents ===" && \
+    dpkg -L proxmox-backup-server 2>/dev/null | head -50 && \
+    echo "=== systemd service files ===" && \
+    dpkg -L proxmox-backup-server 2>/dev/null | grep systemd && \
+    echo "=== All PBS binaries ===" && \
+    find /usr -name "proxmox*" -type f 2>/dev/null && \
     # Cleanup
     rm -rf /tmp/pbs-packages /var/lib/apt/lists/*
 
