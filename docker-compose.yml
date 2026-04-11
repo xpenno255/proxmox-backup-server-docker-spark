@@ -5,11 +5,14 @@ services:
     ports:
       - "8007:8007"
     environment:
-      - NAS_ADDRESS=           # Your NAS IP address
-      - NAS_SHARE=             # NFS export path (e.g. /volume1/Backups)
+      # NAS Configuration - fill in your values
+      - NAS_ADDRESS=192.168.1.53       # Your NAS IP address
+      - NAS_SHARE=/volume1/Proxmox     # NFS export path
       - NAS_MOUNT_POINT=/backups
       - NAS_MOUNT_OPTS=rw,nolock,vers=3,soft,timeo=50
       - NAS_RETRY_INTERVAL=60
+      # Datastore name to auto-create on first run
+      - PBS_DATASTORE=nas-backups
     volumes:
       - pbs_etc:/etc/proxmox-backup
       - pbs_logs:/var/log/proxmox-backup

@@ -1,14 +1,27 @@
 #!/bin/bash
 set -e
 
-# Debug: Show available PBS binaries
-echo "=== DEBUG: Available PBS binaries ==="
-which proxmox-backup-proxy 2>/dev/null || echo "proxmox-backup-proxy not in PATH"
-which proxmox-backup-api 2>/dev/null || echo "proxmox-backup-api not in PATH"
-ls -la /usr/bin/proxmox* 2>/dev/null || echo "No /usr/bin/proxmox*"
-ls -la /usr/sbin/proxmox* 2>/dev/null || echo "No /usr/sbin/proxmox*"
-find /usr -name "proxmox*" -type f 2>/dev/null | while read f; do echo "Found: $f"; done
-echo "====================================="
+# Add PBS binaries to PATH if they exist in non-standard locations
+for pbs_path in /usr/lib/x86_64-linux-gnu/proxmox-backup /usr/lib/aarch64-linux-gnu/proxmox-backup /usr/lib/proxmox-backup; do
+    if [ -d "$pbs_path" ] && [[ ":$PATH:" != *":$pbs_path:"* ]]; then
+        export PATH="${PATH}:${pbs_path}"
+        echo "==> Added $pbs_path to PATH"
+    fi
+done
+
+# Check PBS binary locations and update runit scripts if needed
+PBS_PROXY_BIN=$(which proxmox-backup-proxy 2>/dev/null || find /usr -name "proxmox-backup-proxy" -type f 2>/dev/null | head -1)
+PBS_API_BIN=$(which proxmox-backup-api-daemon 2>/dev/null || find /usr -name "proxmox-backup-api-daemon" -type f 2>/dev/null | head -1 || find /usr -name "proxmox-backup-api" -type f 2>/dev/null | head -1)
+
+if [ -n "$PBS_PROXY_BIN" ]; then
+    echo "==> Found PBS proxy binary: $PBS_PROXY_BIN"
+    sed -i "s|/usr/bin/proxmox-backup-proxy|$PBS_PROXY_BIN|g" /runit/proxmox-backup-proxy/run 2>/dev/null || true
+fi
+
+if [ -n "$PBS_API_BIN" ]; then
+    echo "==> Found PBS api binary: $PBS_API_BIN"
+    sed -i "s|/usr/bin/proxmox-backup-api.*|$PBS_API_BIN|g" /runit/proxmox-backup-api/run 2>/dev/null || true
+fi
 
 # --- NAS / NFS Mount ---
 # If NAS_ADDRESS is set, wait for the NAS and mount via NFS before starting services.
@@ -56,6 +69,30 @@ if [ -n "$NAS_ADDRESS" ] && [ -n "$NAS_SHARE" ]; then
         fi
     else
         echo "==> ${NAS_MOUNT_POINT} is already mounted"
+    fi
+
+    # Verify mount and show contents
+    echo "==> Verifying NAS mount..."
+    if mount | grep -q "${NAS_MOUNT_POINT}"; then
+        echo "==> NAS mount confirmed:"
+        mount | grep "${NAS_MOUNT_POINT}"
+        echo "==> Contents of ${NAS_MOUNT_POINT}:"
+        ls -la "${NAS_MOUNT_POINT}" 2>/dev/null || echo "==> WARNING: Cannot list ${NAS_MOUNT_POINT} contents"
+    else
+        echo "==> WARNING: ${NAS_MOUNT_POINT} is NOT mounted! PBS datastore will fail."
+    fi
+
+    # Create datastore directory if configured
+    PBS_DATASTORE="${PBS_DATASTORE:-}"
+    if [ -n "$PBS_DATASTORE" ]; then
+        DATASTORE_PATH="${NAS_MOUNT_POINT}/${PBS_DATASTORE}"
+        if [ -d "$NAS_MOUNT_POINT" ] && mount | grep -q "${NAS_MOUNT_POINT}"; then
+            echo "==> Creating datastore directory: ${DATASTORE_PATH}"
+            mkdir -p "${DATASTORE_PATH}/.chunks"
+            echo "==> Datastore directory ready"
+        else
+            echo "==> WARNING: Cannot create datastore directory - NAS not mounted at ${NAS_MOUNT_POINT}"
+        fi
     fi
 fi
 
