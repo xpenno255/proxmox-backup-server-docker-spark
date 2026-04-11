@@ -58,9 +58,9 @@ RUN mkdir -p /tmp/pbs-packages && cd /tmp/pbs-packages && \
     echo "=== PBS package contents ===" && \
     dpkg -L proxmox-backup-server 2>/dev/null | head -50 && \
     echo "=== systemd service files ===" && \
-    dpkg -L proxmox-backup-server 2>/dev/null | grep systemd && \
+    dpkg -L proxmox-backup-server 2>/dev/null | grep systemd || true && \
     echo "=== All PBS binaries ===" && \
-    find /usr -name "proxmox*" -type f 2>/dev/null && \
+    (find /usr/bin -name "proxmox*" -type f 2>/dev/null; find /usr/sbin -name "proxmox*" -type f 2>/dev/null; find /lib -name "proxmox*" -type f 2>/dev/null) || true && \
     # Cleanup
     rm -rf /tmp/pbs-packages /var/lib/apt/lists/*
 
