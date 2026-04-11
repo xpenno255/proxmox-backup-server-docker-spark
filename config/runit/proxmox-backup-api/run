@@ -1,2 +1,2 @@
 #!/bin/sh
-exec chpst -u backup proxmox-backup-api-daemon 2>&1
+exec chpst -u backup /usr/bin/proxmox-backup-api 2>&1

@@ -1,2 +1,2 @@
 #!/bin/sh
-exec chpst -u root proxmox-backup-proxy 2>&1
+exec chpst -u root /usr/bin/proxmox-backup-proxy 2>&1
