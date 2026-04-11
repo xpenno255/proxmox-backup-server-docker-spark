@@ -62,6 +62,7 @@ COPY config/pbs/ /etc/proxmox-backup-default/
 
 # Copy runit service definitions
 COPY config/runit/ /runit/
+RUN chmod +x /runit/*/run
 
 # Copy entrypoint
 COPY scripts/entrypoint.sh /entrypoint.sh
