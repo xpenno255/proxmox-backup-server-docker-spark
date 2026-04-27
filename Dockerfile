@@ -7,7 +7,7 @@
 # Build: docker build -t pbs .
 
 ARG DEBIAN_VERSION=trixie
-ARG PBS_VERSION=4.1.6-1
+ARG PBS_VERSION=4.1.10-1
 
 FROM debian:${DEBIAN_VERSION}
 
@@ -45,12 +45,12 @@ RUN mkdir -p /tmp/pbs-packages && cd /tmp/pbs-packages && \
     curl -fSL -O "${RELEASE_URL}/proxmox-backup-docs_${PBS_VERSION}_all.deb" && \
     # Supporting packages
     curl -fSL -O "${RELEASE_URL}/proxmox-mini-journalreader_1.6-1_arm64.deb" && \
-    curl -fSL -O "${RELEASE_URL}/proxmox-termproxy_2.0.3_arm64.deb" && \
-    curl -fSL -O "${RELEASE_URL}/proxmox-widget-toolkit_5.1.8_all.deb" && \
+    curl -fSL -O "${RELEASE_URL}/proxmox-termproxy_2.1.0_arm64.deb" && \
+    curl -fSL -O "${RELEASE_URL}/proxmox-widget-toolkit_5.1.9_all.deb" && \
     curl -fSL -O "${RELEASE_URL}/pve-xtermjs_5.5.0-3_all.deb" && \
-    curl -fSL -O "${RELEASE_URL}/pbs-i18n_3.6.6_all.deb" && \
+    curl -fSL -O "${RELEASE_URL}/pbs-i18n_3.7.1_all.deb" && \
     curl -fSL -O "${RELEASE_URL}/libjs-qrcodejs_1.20230525-pve1_all.deb" && \
-    curl -fSL -O "${RELEASE_URL}/libproxmox-acme-plugins_1.7.0_all.deb" && \
+    curl -fSL -O "${RELEASE_URL}/libproxmox-acme-plugins_1.7.1_all.deb" && \
     # Install all packages (dpkg first pass may fail on deps, apt fixes it)
     dpkg -i *.deb || true && \
     apt-get update && apt-get install -f -y --no-install-recommends && \
